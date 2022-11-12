@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.dmdev</groupId>
+  <artifactId>first-maven-multimodule</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>database</module>
+    <module>service</module>
+    <module>web</module>
+  </modules>
+
+  <name>first-maven-multimodule</name>
+
+  <scm>
+    <connection>scm:git:git@github.com:DAlam6er/maven-multimodule-study.git</connection>
+    <developerConnection>scm:git:git@github.com:DAlam6er/maven-multimodule-study.git</developerConnection>
+    <url>https://github.com/DAlam6er/maven-multimodule-study</url>
+    <tag>first-maven-multimodule-1.0.0</tag>
+  </scm>
+
+  <properties>
+    <app.env>dev</app.env>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <spring.version>5.3.23</spring.version>
+    <service.version>1.0.0-SNAPSHOT</service.version>
+    <database.version>1.0.0-SNAPSHOT</database.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>jakarta.servlet</groupId>
+        <artifactId>jakarta.servlet-api</artifactId>
+        <version>5.0.0</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>42.5.0</version>
+        <scope>runtime</scope>
+        <!--      <optional>true</optional>-->
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.13.2</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-webmvc</artifactId>
+        <version>${spring.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-aop</artifactId>
+        <version>${spring.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>${basedir}/src/main/resources</directory>
+        <filtering>true</filtering>
+        <excludes>
+          <exclude>non-existing-file.properties</exclude>
+        </excludes>
+      </resource>
+    </resources>
+<!--    maven-release-plugin-->
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>3.0.0-M7</version>
+      </plugin>
+    </plugins>
+    <pluginManagement>
+      <plugins>
+<!--        clean : clean-->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>3.2.0</version>
+        </plugin>
+        <!--      CUSTOM resources : copy-resource-->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>3.3.0</version>
+          <executions>
+            <execution>
+              <id>copy-docker-files</id>
+              <goals>
+                <goal>copy-resources</goal>
+              </goals>
+              <phase>validate</phase>
+              <configuration>
+                <outputDirectory>${project.basedir}/target</outputDirectory>
+                <resources>
+                  <resource>
+                    <directory>${project.basedir}/docker</directory>
+                  </resource>
+                </resources>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        <!--      compiler : compile-->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.10.1</version>
+          <configuration>
+            <source>17</source>
+            <target>17</target>
+          </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>compile</goal>
+              </goals>
+              <!--            <phase>validate</phase>-->
+            </execution>
+          </executions>
+        </plugin>
+        <!--      surfire : test-->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.0.0-M7</version>
+          <configuration>
+            <!--          <skip>true</skip>-->
+            <!--          <skipTests>true</skipTests>-->
+            <includes>
+              <include>*Test.java</include>
+              <include>*TestCase.java</include>
+              <include>ExcludedTest*.java</include>
+            </includes>
+          </configuration>
+        </plugin>
+        <!--      war : war (package phase)-->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-war-plugin</artifactId>
+          <version>3.3.2</version>
+        </plugin>
+        <!--      jar : jar (package phase)-->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.3.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>3.3.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>3.4.2</version>
+        </plugin>
+        <!--      CUSTOM failsafe : integration-test-->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>3.0.0-M7</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>integration-test</goal>
+                <goal>verify</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <!--      install : install-->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>3.0.1</version>
+        </plugin>
+        <!--      deploy : deploy-->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>3.0.0</version>
+        </plugin>
+        <!--      site plugin-->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.12.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-project-info-reports-plugin</artifactId>
+          <version>3.4.1</version>
+        </plugin>
+        <!--      jacoco plugin for test documentation-->
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>0.8.8</version>
+          <executions>
+            <execution>
+              <id>prepare-agent</id>
+              <goals>
+                <goal>prepare-agent</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>generate-jacoco-report</id>
+              <goals>
+                <goal>report</goal>
+              </goals>
+              <phase>prepare-package</phase>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>prod</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+        <jdk>17</jdk>
+        <file>
+          <exists>${basedir}/pom.xml</exists>
+        </file>
+        <property>
+          <name>test.prop</name>
+          <value>example</value>
+        </property>
+<!--        <activeByDefault>true</activeByDefault>-->
+      </activation>
+      <properties>
+        <app.env>prod</app.env>
+        <example>test-test</example>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.10.1</version>
+            <configuration>
+              <debug>false</debug>
+              <optimize>true</optimize>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+  <!--  M2_HOME/conf-->
+  <!--  ~/.m2/settings.xml-->
+  <distributionManagement>
+    <snapshotRepository>
+      <id>nexus</id>
+      <url>http://tsrvk.site:8081/repository/maven-snapshots/</url>
+    </snapshotRepository>
+    <repository>
+      <id>nexus</id>
+      <url>http://tsrvk.site:8081/repository/maven-releases/</url>
+    </repository>
+  </distributionManagement>
+</project>
